@@ -1,0 +1,37 @@
+### File 8/8 — .github/workflows/ci.yml (GitHub Actions – auto-test on push)
+
+```yaml
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install OpenFHE deps
+        run: sudo apt-get update && sudo apt-get install -y libomp-dev clang
+
+      - name: Build OpenFHE cipher
+        run: |
+          cd openfhe
+          mkdir build && cd build
+          cmake ..
+          make -j$(nproc)
+          ./temporal_cipher
+
+      - name: Hardhat compile
+        run: |
+          npm install
+          npx hardhat compile
+
+      - name: Frontend build
+        run: |
+          cd frontend
+          npm install
+          npm run build
